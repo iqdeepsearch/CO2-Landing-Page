@@ -13,10 +13,15 @@ document.querySelectorAll(".faq__question").forEach((btn) => {
   });
 });
 
-// --- Scroll reveal for section blocks ---
+// --- Scroll reveal for section blocks (progressive enhancement) ---
+// O conteúdo já vem visível por padrão via CSS. Só se este script rodar
+// com sucesso é que aplicamos o efeito de fade-in — assim, se o arquivo
+// não carregar por qualquer motivo, o conteúdo nunca fica escondido.
 const revealTargets = document.querySelectorAll("[data-reveal]");
 
 if ("IntersectionObserver" in window && revealTargets.length) {
+  revealTargets.forEach((el) => el.classList.add("reveal-pending"));
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -29,8 +34,6 @@ if ("IntersectionObserver" in window && revealTargets.length) {
     { threshold: 0.15 }
   );
   revealTargets.forEach((el) => observer.observe(el));
-} else {
-  revealTargets.forEach((el) => el.classList.add("is-visible"));
 }
 
 // ============================================================
