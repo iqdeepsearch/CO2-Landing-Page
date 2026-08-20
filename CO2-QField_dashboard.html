@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CO2-QField · Painel de Emissões</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#12160f;
+    --panel:#1a1f16;
+    --panel-raised:#212719;
+    --border:#2c3323;
+    --border-soft:#232a1c;
+    --leaf:#7ea855;
+    --leaf-bright:#a3d476;
+    --soil:#8a7a5c;
+    --teal:#4f8f8c;
+    --amber:#d3a24d;
+    --rust:#c25b3f;
+    --text:#e7e5d9;
+    --text-dim:#9aa08c;
+    --text-faint:#5f6656;
+    --mono:'IBM Plex Mono', monospace;
+    --display:'Space Grotesk', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(126,168,85,0.06), transparent 45%),
+      radial-gradient(ellipse at 85% 100%, rgba(79,143,140,0.05), transparent 50%),
+      var(--void);
+    color:var(--text);
+    font-family:var(--mono);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ===== Topbar ===== */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg, rgba(33,39,25,0.6), transparent);
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:8px;
+    background:linear-gradient(135deg, var(--leaf), #4d6e39);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-weight:700;color:var(--void);font-size:15px;
+    box-shadow:0 0 18px rgba(126,168,85,0.25);
+  }
+  .brand-text h1{
+    font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:0.2px;
+  }
+  .brand-text span{font-size:11px;color:var(--text-dim);letter-spacing:0.4px;}
+  .topbar-right{display:flex;align-items:center;gap:18px;}
+  .plant-switch{
+    display:flex;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px;
+  }
+  .plant-switch button{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:0.3px;
+    background:transparent;border:none;color:var(--text-dim);
+    padding:7px 14px;border-radius:6px;cursor:pointer;transition:all .15s ease;
+  }
+  .plant-switch button.active{background:var(--leaf);color:#12160f;font-weight:600;}
+  .plant-switch button:not(.active):hover{color:var(--text);}
+  .sync-status{
+    display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-dim);
+  }
+  .pulse-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--leaf-bright);
+    box-shadow:0 0 0 0 rgba(163,212,118,0.6);
+    animation:pulse 2.2s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(163,212,118,0.45);}
+    70%{box-shadow:0 0 0 7px rgba(163,212,118,0);}
+    100%{box-shadow:0 0 0 0 rgba(163,212,118,0);}
+  }
+
+  /* ===== Layout ===== */
+  .shell{max-width:1400px;margin:0 auto;padding:22px 28px 60px;}
+  .eyebrow{
+    font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--leaf-bright);
+    display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  }
+  .eyebrow::before{content:'';width:14px;height:1px;background:var(--leaf-bright);}
+  .section-title{
+    font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:2px;
+  }
+  .section-sub{font-size:11.5px;color:var(--text-dim);margin-bottom:16px;}
+
+  /* ===== KPI row ===== */
+  .kpi-row{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0 28px;
+  }
+  .kpi-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .kpi-card::after{
+    content:'';position:absolute;top:0;left:0;width:100%;height:2px;
+    background:var(--accent, var(--leaf));
+  }
+  .kpi-label{font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;}
+  .kpi-value{font-family:var(--display);font-size:26px;font-weight:600;line-height:1;}
+  .kpi-unit{font-size:12px;color:var(--text-dim);margin-left:4px;font-family:var(--mono);}
+  .kpi-delta{font-size:11px;margin-top:8px;display:flex;align-items:center;gap:5px;}
+  .kpi-delta.down{color:var(--leaf-bright);}
+  .kpi-delta.up{color:var(--rust);}
+  .kpi-delta.flat{color:var(--text-dim);}
+
+  /* ===== Grid main ===== */
+  .grid-main{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:16px;}
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:18px 20px;
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .panel-head h3{font-family:var(--display);font-size:14.5px;font-weight:600;}
+  .panel-head .tag{
+    font-size:9.5px;letter-spacing:0.5px;text-transform:uppercase;color:var(--text-dim);
+    border:1px solid var(--border-soft);padding:3px 8px;border-radius:20px;
+  }
+
+  #map{height:380px;border-radius:8px;overflow:hidden;border:1px solid var(--border-soft);}
+  .map-legend{display:flex;gap:16px;margin-top:12px;font-size:10.5px;color:var(--text-dim);flex-wrap:wrap;}
+  .map-legend span{display:flex;align-items:center;gap:6px;}
+  .legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  /* Pipeline (signature element) */
+  .pipeline{display:flex;flex-direction:column;gap:0;}
+  .pipe-stage{
+    display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:12px;
+    padding:13px 4px;position:relative;
+  }
+  .pipe-stage:not(:last-child)::after{
+    content:'';position:absolute;left:9px;bottom:-1px;width:1px;height:14px;
+    background:repeating-linear-gradient(180deg,var(--border-soft) 0 3px, transparent 3px 6px);
+  }
+  .pipe-node{
+    width:20px;height:20px;border-radius:50%;border:2px solid var(--stage-color);
+    display:flex;align-items:center;justify-content:center;background:var(--void);
+  }
+  .pipe-node::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--stage-color);}
+  .pipe-label{font-size:12.5px;font-weight:500;}
+  .pipe-role{font-size:9.5px;color:var(--text-faint);display:block;margin-top:2px;}
+  .pipe-count{font-family:var(--display);font-size:20px;font-weight:600;color:var(--stage-color);}
+  .pipe-count-unit{font-size:9.5px;color:var(--text-dim);display:block;text-align:right;}
+
+  /* ===== Charts row ===== */
+  .grid-charts{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px;}
+  .chart-wrap{height:220px;position:relative;}
+
+  /* ===== Bottom row: alerts + sync queue ===== */
+  .grid-bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .list-row{
+    display:flex;align-items:flex-start;gap:12px;padding:11px 4px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .list-row:last-child{border-bottom:none;}
+  .list-icon{
+    width:26px;height:26px;border-radius:6px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:12px;
+  }
+  .list-icon.alert{background:rgba(194,91,63,0.15);color:var(--rust);}
+  .list-icon.warn{background:rgba(211,162,77,0.15);color:var(--amber);}
+  .list-icon.error{background:rgba(194,91,63,0.15);color:var(--rust);}
+  .list-title{font-size:12.5px;font-weight:500;}
+  .list-meta{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
+  .list-badge{
+    margin-left:auto;font-size:9.5px;padding:3px 8px;border-radius:20px;
+    text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap;
+  }
+  .badge-critical{background:rgba(194,91,63,0.18);color:#e08268;}
+  .badge-warn{background:rgba(211,162,77,0.18);color:var(--amber);}
+  .badge-rejected{background:rgba(194,91,63,0.18);color:#e08268;}
+
+  footer{
+    text-align:center;font-size:10.5px;color:var(--text-faint);padding:24px 0 10px;
+    border-top:1px solid var(--border-soft);margin-top:24px;
+  }
+
+  @media (max-width: 980px){
+    .kpi-row{grid-template-columns:repeat(2,1fr);}
+    .grid-main, .grid-charts, .grid-bottom{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">C₂</div>
+    <div class="brand-text">
+      <h1>CO2-QField</h1>
+      <span>Monitoramento de emissões industriais · GHG Protocol Escopo 1/2</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="plant-switch" id="plantSwitch">
+      <button class="active" data-plant="alpha">Cerâmica Vale Verde</button>
+      <button data-plant="beta">Frigorífico Serra Azul</button>
+    </div>
+    <div class="sync-status"><span class="pulse-dot"></span> Última sinc. há 6 min</div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="eyebrow">Visão consolidada · competência agosto/2026</div>
+  <div class="section-title" id="plantTitle">Cerâmica Vale Verde — schema planta_alpha</div>
+  <div class="section-sub" id="plantSub">18 ativos monitorados · isolamento por role qfield_alpha</div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- MAP + PIPELINE -->
+  <div class="grid-main">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Mapa de emissões por ativo</h3>
+        <span class="tag">PostGIS · coordenadas de campo</span>
+      </div>
+      <div id="map"></div>
+      <div class="map-legend">
+        <span><i class="legend-dot" style="background:#7ea855"></i> Dentro do limiar</span>
+        <span><i class="legend-dot" style="background:#d3a24d"></i> Atenção (80–100%)</span>
+        <span><i class="legend-dot" style="background:#c25b3f"></i> Acima do limiar crítico</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Cadeia de custódia da coleta</h3>
+        <span class="tag">core.valida_transicao_coleta()</span>
+      </div>
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="grid-charts">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Emissões mensais por escopo</h3>
+        <span class="tag">tCO₂</span>
+      </div>
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Balanço por escopo</h3>
+        <span class="tag">período atual</span>
+      </div>
+      <div class="chart-wrap"><canvas id="scopeChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ALERTS + SYNC QUEUE -->
+  <div class="grid-bottom">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Alertas de limiar crítico</h3>
+        <span class="tag" id="alertCountTag">3 ativos</span>
+      </div>
+      <div id="alertList"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Fila de sincronização</h3>
+        <span class="tag">Rejected / Error · QFieldCloud</span>
+      </div>
+      <div id="syncList"></div>
+    </div>
+  </div>
+
+  <footer>CO2-QField MVP · GHG Protocol Corp. Standard (Escopo 1/2) · Fatores SIRENE/MCTI e IPCC AR6 · Dados de demonstração</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const COLORS = { leaf:'#7ea855', leafBright:'#a3d476', teal:'#4f8f8c', amber:'#d3a24d', rust:'#c25b3f', textDim:'#9aa08c', border:'#2c3323' };
+
+/* ================= MOCK DATA ================= */
+const DATA = {
+  alpha: {
+    title: "Cerâmica Vale Verde — schema planta_alpha",
+    sub: "18 ativos monitorados · isolamento por role qfield_alpha",
+    center: [-19.92, -43.94], zoom: 14,
+    kpis: [
+      { label:"Emissão total", value:"842.6", unit:"tCO₂", delta:"-4.2% vs. mês anterior", trend:"down", accent:COLORS.leaf },
+      { label:"Escopo 1 · combustão", value:"611.3", unit:"tCO₂", delta:"forno cerâmico + secador", trend:"flat", accent:COLORS.amber },
+      { label:"Escopo 2 · eletricidade", value:"231.3", unit:"tCO₂", delta:"fator SIN ago/26", trend:"flat", accent:COLORS.teal },
+      { label:"Intensidade de carbono", value:"18.4", unit:"kg/ton produzida", delta:"-2.1% vs. meta", trend:"down", accent:COLORS.leaf },
+      { label:"Ativos em alerta", value:"3", unit:"de 18", delta:"acima do limiar crítico", trend:"up", accent:COLORS.rust },
+    ],
+    pipeline: [
+      { label:"Rascunho", role:"qfield_alpha · escrita bruta", count:24, color:COLORS.textDim },
+      { label:"Calculado", role:"calc_engine · fator resolvido", count:41, color:COLORS.teal },
+      { label:"Validado", role:"gestor_auditor · revisão", count:118, color:COLORS.amber },
+      { label:"Exportado", role:"imutável · fechamento oficial", count:302, color:COLORS.leafBright },
+    ],
+    trend: {
+      labels:["Mar","Abr","Mai","Jun","Jul","Ago"],
+      scope1:[598,615,632,601,589,611],
+      scope2:[240,238,245,229,235,231],
+    },
+    scopeSplit: [611.3, 231.3],
+    assets: [
+      { name:"Forno Túnel 01", lat:-19.9195, lng:-43.9410, status:"crit", emission:"64.2 tCO₂/mês" },
+      { name:"Forno Túnel 02", lat:-19.9205, lng:-43.9385, status:"crit", emission:"58.9 tCO₂/mês" },
+      { name:"Secador Rotativo", lat:-19.9188, lng:-43.9432, status:"warn", emission:"41.0 tCO₂/mês" },
+      { name:"Gerador Diesel", lat:-19.9212, lng:-43.9395, status:"crit", emission:"22.1 tCO₂/mês" },
+      { name:"Caldeira Aux. 01", lat:-19.9178, lng:-43.9418, status:"ok", emission:"12.4 tCO₂/mês" },
+      { name:"Subestação Elétrica", lat:-19.9200, lng:-43.9440, status:"ok", emission:"9.8 tCO₂/mês" },
+      { name:"Moinho de Argila", lat:-19.9220, lng:-43.9370, status:"ok", emission:"6.2 tCO₂/mês" },
+      { name:"Pátio de Estocagem", lat:-19.9165, lng:-43.9400, status:"ok", emission:"2.1 tCO₂/mês" },
+    ],
+    alerts: [
+      { title:"Forno Túnel 01 — 128% do limiar", meta:"Escopo 1 · combustão · detectado há 2h", level:"critical" },
+      { title:"Forno Túnel 02 — 116% do limiar", meta:"Escopo 1 · combustão · detectado há 5h", level:"critical" },
+      { title:"Gerador Diesel — 104% do limiar", meta:"Escopo 1 · combustão · detectado há 1 dia", level:"warn" },
+    ],
+    sync: [
+      { title:"Delta rejeitado — consumo_medido < 0", meta:"Secador Rotativo · ativo_id A-0114 · há 34 min", level:"rejected" },
+      { title:"Delta em erro — coordenada fora do polígono da planta", meta:"Forno Túnel 01 · ativo_id A-0089 · há 2h", level:"rejected" },
+    ],
+  },
+  beta: {
+    title: "Frigorífico Serra Azul — schema planta_beta",
+    sub: "11 ativos monitorados · isolamento por role qfield_beta",
+    center: [-27.59, -48.55], zoom: 14,
+    kpis: [
+      { label:"Emissão total", value:"396.1", unit:"tCO₂", delta:"+1.8% vs. mês anterior", trend:"up", accent:COLORS.leaf },
+      { label:"Escopo 1 · combustão", value:"142.7", unit:"tCO₂", delta:"caldeiras a GLP", trend:"flat", accent:COLORS.amber },
+      { label:"Escopo 2 · eletricidade", value:"253.4", unit:"tCO₂", delta:"fator SIN ago/26", trend:"flat", accent:COLORS.teal },
+      { label:"Intensidade de carbono", value:"9.7", unit:"kg/ton produzida", delta:"dentro da meta", trend:"flat", accent:COLORS.leaf },
+      { label:"Ativos em alerta", value:"1", unit:"de 11", delta:"acima do limiar crítico", trend:"up", accent:COLORS.rust },
+    ],
+    pipeline: [
+      { label:"Rascunho", role:"qfield_beta · escrita bruta", count:9, color:COLORS.textDim },
+      { label:"Calculado", role:"calc_engine · fator resolvido", count:17, color:COLORS.teal },
+      { label:"Validado", role:"gestor_auditor · revisão", count:64, color:COLORS.amber },
+      { label:"Exportado", role:"imutável · fechamento oficial", count:190, color:COLORS.leafBright },
+    ],
+    trend: {
+      labels:["Mar","Abr","Mai","Jun","Jul","Ago"],
+      scope1:[151,148,139,144,140,143],
+      scope2:[248,251,246,255,249,253],
+    },
+    scopeSplit: [142.7, 253.4],
+    assets: [
+      { name:"Caldeira GLP 01", lat:-27.5895, lng:-48.5510, status:"crit", emission:"38.4 tCO₂/mês" },
+      { name:"Câmara de Refrigeração A", lat:-27.5910, lng:-48.5490, status:"ok", emission:"31.2 tCO₂/mês" },
+      { name:"Câmara de Refrigeração B", lat:-27.5878, lng:-48.5525, status:"ok", emission:"29.6 tCO₂/mês" },
+      { name:"Caldeira GLP 02", lat:-27.5920, lng:-48.5470, status:"warn", emission:"24.1 tCO₂/mês" },
+      { name:"Subestação Elétrica", lat:-27.5900, lng:-48.5540, status:"ok", emission:"18.7 tCO₂/mês" },
+      { name:"ETE — Tratamento Efluentes", lat:-27.5865, lng:-48.5500, status:"ok", emission:"4.3 tCO₂/mês" },
+    ],
+    alerts: [
+      { title:"Caldeira GLP 01 — 111% do limiar", meta:"Escopo 1 · combustão · detectado há 3h", level:"critical" },
+    ],
+    sync: [
+      { title:"Delta em erro — timestamp fora da janela de sincronização", meta:"Câmara de Refrigeração A · ativo_id B-0033 · há 48 min", level:"rejected" },
+    ],
+  }
+};
+
+let map, markersLayer, trendChart, scopeChart;
+const statusColor = { ok: COLORS.leaf, warn: COLORS.amber, crit: COLORS.rust };
+
+function renderKPIs(d){
+  const row = document.getElementById('kpiRow');
+  row.innerHTML = d.kpis.map(k => `
+    <div class="kpi-card" style="--accent:${k.accent}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
+      <div class="kpi-delta ${k.trend}">${k.trend==='down'?'▾':k.trend==='up'?'▴':'—'} ${k.delta}</div>
+    </div>`).join('');
+}
+
+function renderPipeline(d){
+  const el = document.getElementById('pipeline');
+  el.innerHTML = d.pipeline.map(p => `
+    <div class="pipe-stage" style="--stage-color:${p.color}">
+      <div class="pipe-node"></div>
+      <div>
+        <div class="pipe-label">${p.label}</div>
+        <span class="pipe-role">${p.role}</span>
+      </div>
+      <div>
+        <div class="pipe-count">${p.count}</div>
+        <span class="pipe-count-unit">coletas</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderMap(d){
+  if(!map){
+    map = L.map('map', { zoomControl:true, attributionControl:false }).setView(d.center, d.zoom);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
+    markersLayer = L.layerGroup().addTo(map);
+  } else {
+    map.setView(d.center, d.zoom);
+    markersLayer.clearLayers();
+  }
+  d.assets.forEach(a => {
+    const c = statusColor[a.status];
+    L.circleMarker([a.lat, a.lng], {
+      radius: a.status==='crit' ? 11 : a.status==='warn' ? 9 : 7,
+      color: c, weight: 2, fillColor: c, fillOpacity: 0.35
+    }).bindTooltip(`<b>${a.name}</b><br>${a.emission}`, { direction:'top', offset:[0,-6] })
+      .addTo(markersLayer);
+  });
+}
+
+function renderCharts(d){
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  const scopeCtx = document.getElementById('scopeChart').getContext('2d');
+
+  if(trendChart) trendChart.destroy();
+  if(scopeChart) scopeChart.destroy();
+
+  trendChart = new Chart(trendCtx, {
+    type:'bar',
+    data:{
+      labels: d.trend.labels,
+      datasets:[
+        { label:'Escopo 1', data:d.trend.scope1, backgroundColor: COLORS.amber, borderRadius:3, stack:'s' },
+        { label:'Escopo 2', data:d.trend.scope2, backgroundColor: COLORS.teal, borderRadius:3, stack:'s' },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color: COLORS.textDim, font:{family:'IBM Plex Mono', size:10.5}, boxWidth:10 } } },
+      scales:{
+        x:{ stacked:true, grid:{ color:'rgba(255,255,255,0.03)' }, ticks:{ color:COLORS.textDim, font:{family:'IBM Plex Mono', size:10} } },
+        y:{ stacked:true, grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:COLORS.textDim, font:{family:'IBM Plex Mono', size:10} } },
+      }
+    }
+  });
+
+  scopeChart = new Chart(scopeCtx, {
+    type:'doughnut',
+    data:{
+      labels:['Escopo 1', 'Escopo 2'],
+      datasets:[{ data:d.scopeSplit, backgroundColor:[COLORS.amber, COLORS.teal], borderColor:'#1a1f16', borderWidth:3 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'68%',
+      plugins:{ legend:{ position:'bottom', labels:{ color: COLORS.textDim, font:{family:'IBM Plex Mono', size:10.5}, boxWidth:10, padding:14 } } }
+    }
+  });
+}
+
+function renderAlerts(d){
+  document.getElementById('alertCountTag').textContent = `${d.alerts.length} ativos`;
+  document.getElementById('alertList').innerHTML = d.alerts.map(a => `
+    <div class="list-row">
+      <div class="list-icon ${a.level==='critical'?'alert':'warn'}">!</div>
+      <div>
+        <div class="list-title">${a.title}</div>
+        <div class="list-meta">${a.meta}</div>
+      </div>
+      <div class="list-badge ${a.level==='critical'?'badge-critical':'badge-warn'}">${a.level==='critical'?'crítico':'atenção'}</div>
+    </div>`).join('') || `<div class="list-meta" style="padding:8px 4px;">Nenhum alerta ativo.</div>`;
+}
+
+function renderSync(d){
+  document.getElementById('syncList').innerHTML = d.sync.map(s => `
+    <div class="list-row">
+      <div class="list-icon error">✕</div>
+      <div>
+        <div class="list-title">${s.title}</div>
+        <div class="list-meta">${s.meta}</div>
+      </div>
+      <div class="list-badge badge-rejected">rejected</div>
+    </div>`).join('') || `<div class="list-meta" style="padding:8px 4px;">Fila vazia — nenhum delta pendente.</div>`;
+}
+
+function renderAll(key){
+  const d = DATA[key];
+  document.getElementById('plantTitle').textContent = d.title;
+  document.getElementById('plantSub').textContent = d.sub;
+  renderKPIs(d);
+  renderPipeline(d);
+  renderMap(d);
+  renderCharts(d);
+  renderAlerts(d);
+  renderSync(d);
+}
+
+document.getElementById('plantSwitch').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('.plant-switch button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll(btn.dataset.plant);
+});
+
+renderAll('alpha');
+</script>
+</body>
+</html>
