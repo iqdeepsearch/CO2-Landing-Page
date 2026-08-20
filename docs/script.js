@@ -1,5 +1,5 @@
 // ============================================================
-// CO2·QField — V1, variante Formspree (estática, sem backend próprio)
+// CO2·QField — V1 (Formspree, estática, sem backend próprio)
 // ============================================================
 
 // --- FAQ accordion ---
@@ -49,15 +49,4 @@ if ("IntersectionObserver" in window && revealTargets.length) {
 //      do Memorial Descritivo embutido como contexto fixo —
 //      sem base vetorial e sem busca na web (ver briefing V1.5
 //      para o racional dessa decisão).
-//
-// Exemplo do fetch que a UI do V1.5 faria (não usado na V1):
-//
-// async function askAssistant(question) {
-//   const res = await fetch("https://SEU-PROJETO.vercel.app/api/ask", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ question }),
-//   });
-//   return res.json();
-// }
 // ============================================================

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CO2·QField — Monitoramento de Emissões de CO₂ Industrial</title>
-<meta name="description" content="Do campo ao dado auditável: coleta padronizada, cálculo conforme GHG Protocol e governança de dados para monitoramento de emissões de CO₂ industrial.">
+<meta name="description" content="Chega de planilha manual gerando risco de auditoria. Coleta padronizada, cálculo conforme GHG Protocol e trilha de auditoria imutável para monitoramento de emissões de CO₂ industrial.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -25,29 +25,50 @@
   <section class="hero">
     <div class="wrap">
       <p class="eyebrow">Monitoramento de emissões de CO₂ industrial</p>
-      <h1 class="hero__title">Cada leitura em campo, rastreável até o relatório de auditoria.</h1>
+      <h1 class="hero__title">A próxima multa ambiental pode estar escondida numa planilha desatualizada.</h1>
       <p class="hero__sub">
-        Coleta padronizada em campo, cálculo de Escopos 1 e 2 conforme o GHG Protocol e trilha de
-        auditoria imutável — pensado para plantas industriais de médio porte e as consultorias
-        ambientais que as assessoram.
+        O CO2·QField substitui a coleta manual por um fluxo automatizado: leitura em campo
+        via QR Code, cálculo de Escopos 1 e 2 conforme o GHG Protocol, e uma trilha de
+        auditoria que nunca se perde — pensado para plantas industriais de médio porte e as
+        consultorias ambientais que as assessoram.
       </p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#interesse">Quero acompanhar o desenvolvimento</a>
         <a class="btn btn--ghost" href="#fluxo">Ver como funciona ↓</a>
       </div>
 
-      <!-- Signature element: instrument trace showing the data pipeline -->
-      <div class="trace" role="img" aria-label="Fluxo de dados: QR Code, GPS, Cálculo, Validação, Dashboard">
-        <svg class="trace__line" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
-          <line x1="0" y1="20" x2="1000" y2="20" />
-        </svg>
-        <ul class="trace__points">
-          <li class="trace__point"><span class="trace__dot"></span><span class="trace__label">QR Code</span></li>
-          <li class="trace__point"><span class="trace__dot"></span><span class="trace__label">GPS</span></li>
-          <li class="trace__point"><span class="trace__dot"></span><span class="trace__label">Cálculo</span></li>
-          <li class="trace__point"><span class="trace__dot"></span><span class="trace__label">Validação</span></li>
-          <li class="trace__point"><span class="trace__dot"></span><span class="trace__label">Dashboard</span></li>
-        </ul>
+      <!-- Signature element: icon-based flow diagram -->
+      <div class="flow-diagram" data-reveal role="img" aria-label="Fluxo de dados: QR Code, GPS, Cálculo, Validação, Dashboard">
+        <div class="flow-step">
+          <span class="flow-step__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/></svg>
+          </span>
+          <span class="flow-step__label">QR Code</span>
+        </div>
+        <div class="flow-step">
+          <span class="flow-step__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-7.58 7-12A7 7 0 0 0 5 9c0 4.42 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          </span>
+          <span class="flow-step__label">GPS</span>
+        </div>
+        <div class="flow-step">
+          <span class="flow-step__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="3" width="14" height="18" rx="1.5"/><line x1="8" y1="7" x2="16" y2="7"/><circle cx="8" cy="11.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="11.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="11.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="8" cy="15.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="12" cy="15.5" r="0.7" fill="currentColor" stroke="none"/><circle cx="16" cy="15.5" r="0.7" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <span class="flow-step__label">Cálculo</span>
+        </div>
+        <div class="flow-step">
+          <span class="flow-step__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
+          </span>
+          <span class="flow-step__label">Validação</span>
+        </div>
+        <div class="flow-step">
+          <span class="flow-step__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="12" width="3" height="8"/><rect x="11" y="8" width="3" height="12"/><rect x="16" y="4" width="3" height="16"/></svg>
+          </span>
+          <span class="flow-step__label">Dashboard</span>
+        </div>
       </div>
     </div>
   </section>
@@ -139,8 +160,64 @@
     </div>
   </section>
 
+  <!-- ============ MOCKUP DO DASHBOARD ============ -->
+  <section class="section" id="mockup">
+    <div class="wrap">
+      <p class="eyebrow">Prova visual</p>
+      <h2 class="section__title">Veja como os dados chegam até você</h2>
+      <p class="section__note">
+        Representação ilustrativa do painel executivo — os dados abaixo são fictícios, usados
+        apenas para mostrar como a informação é organizada.
+      </p>
+
+      <div class="mockup" data-reveal>
+        <div class="mockup__chrome">
+          <span class="mockup__chrome-dot"></span>
+          <span class="mockup__chrome-dot"></span>
+          <span class="mockup__chrome-dot"></span>
+          <span class="mockup__chrome-label">dashboard.co2qfield — Planta Exemplo</span>
+        </div>
+        <div class="mockup__body">
+          <div class="mockup__kpis">
+            <div class="mockup__kpi">
+              <p class="mockup__kpi-label">Emissões no mês</p>
+              <p class="mockup__kpi-value">128,4 tCO₂e</p>
+            </div>
+            <div class="mockup__kpi">
+              <p class="mockup__kpi-label">Ativos monitorados</p>
+              <p class="mockup__kpi-value">34</p>
+            </div>
+            <div class="mockup__kpi">
+              <p class="mockup__kpi-label">Coletas validadas</p>
+              <p class="mockup__kpi-value">96%</p>
+            </div>
+          </div>
+          <div class="mockup__grid">
+            <div class="mockup__chart">
+              <p class="mockup__chart-label">Emissões mensais (tCO₂e)</p>
+              <div class="mockup__bars">
+                <div class="mockup__bar" style="height: 45%;"></div>
+                <div class="mockup__bar" style="height: 60%;"></div>
+                <div class="mockup__bar" style="height: 52%;"></div>
+                <div class="mockup__bar" style="height: 78%;"></div>
+                <div class="mockup__bar" style="height: 66%;"></div>
+                <div class="mockup__bar" style="height: 90%;"></div>
+              </div>
+            </div>
+            <div class="mockup__map">
+              <span class="mockup__map-pin" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s7-7.58 7-12A7 7 0 0 0 5 9c0 4.42 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>
+              </span>
+              <span class="mockup__map-label">Planta Exemplo — georreferenciada</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ FAQ ============ -->
-  <section class="section" id="faq">
+  <section class="section section--alt" id="faq">
     <div class="wrap">
       <p class="eyebrow">Perguntas frequentes</p>
       <h2 class="section__title">Perguntas técnicas, respondidas com precisão</h2>
@@ -158,8 +235,9 @@
             Quais escopos de emissão o sistema calcula?
           </button>
           <div class="faq__answer">
-            <p>Escopos 1 e 2, conforme o GHG Protocol Corporativo, usando fatores de emissão do
-            IPCC e, para energia elétrica, do Sistema Interligado Nacional (SIN/MCTI).</p>
+            <p>Escopos 1 e 2, conforme o <a href="https://ghgprotocol.org" target="_blank" rel="noopener">GHG Protocol Corporativo</a>,
+            usando fatores de emissão do <a href="https://www.ipcc.ch" target="_blank" rel="noopener">IPCC</a> e, para energia
+            elétrica, do Sistema Interligado Nacional (SIN/MCTI).</p>
           </div>
         </div>
 
@@ -245,6 +323,15 @@
 
       </div>
 
+      <div class="sources">
+        <p class="sources__label">Referências normativas</p>
+        <ul class="sources__list">
+          <li><a href="https://ghgprotocol.org" target="_blank" rel="noopener">GHG Protocol ↗</a></li>
+          <li><a href="https://www.ipcc.ch" target="_blank" rel="noopener">IPCC ↗</a></li>
+          <li><a href="https://www.gov.br/mcti" target="_blank" rel="noopener">MCTI (fatores SIN) ↗</a></li>
+        </ul>
+      </div>
+
       <!-- V1.5 hook: assistant widget mounts here. See README.md § "V1.5". -->
 
     </div>
@@ -262,11 +349,11 @@
       </p>
 
       <!--
-        V1 (variante Formspree): substitua a URL abaixo pelo endpoint do seu
-        formulário (ex.: Formspree — https://formspree.io/f/SEU_ID), já que o
-        GitHub Pages não executa backend próprio.
+        V1: este formulário envia direto para o Formspree.
+        Antes de publicar, crie uma conta gratuita em formspree.io,
+        gere um endpoint, e substitua SEU_ID abaixo.
       -->
-      <form class="form" action="https://formspree.io/f/xppakyol" method="POST">
+      <form class="form" id="interesse-form" action="https://formspree.io/f/SEU_ID" method="POST">
         <div class="form__row">
           <label class="form__label" for="nome">Nome</label>
           <input class="form__input" type="text" id="nome" name="nome" required>
@@ -294,9 +381,14 @@
   <div class="wrap site-footer__inner">
     <span class="wordmark wordmark--small">CO2<span class="wordmark__dot">·</span>QField</span>
     <p class="site-footer__note">Metodologia alinhada ao GHG Protocol, IPCC e SIRENE/MCTI.</p>
+    <div class="site-footer__links">
+      <a href="https://ghgprotocol.org" target="_blank" rel="noopener">GHG Protocol</a>
+      <a href="https://www.ipcc.ch" target="_blank" rel="noopener">IPCC</a>
+      <a href="https://www.gov.br/mcti" target="_blank" rel="noopener">MCTI</a>
+    </div>
   </div>
 </footer>
 
-<script src="script-formspree.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
