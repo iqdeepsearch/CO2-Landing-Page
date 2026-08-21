@@ -644,3 +644,46 @@ a:hover { color: var(--green-600); }
   font-family: var(--font-mono);
   font-size: 12px;
 }
+
+/* ---------- V1.5: Assistente de FAQ ---------- */
+
+.assistant {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.assistant__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin: 0 0 10px;
+}
+
+.assistant__form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.assistant__input {
+  flex: 1;
+  min-width: 240px;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  color: var(--ink-900);
+}
+
+.assistant__answer {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper-100);
+  font-size: 15px;
+  color: var(--ink-700);
+  white-space: pre-wrap;
+}
+
+.assistant__answer--loading { color: var(--ink-muted); font-family: var(--font-mono); font-size: 13px; }
+.assistant__answer--error { color: var(--red-600); }

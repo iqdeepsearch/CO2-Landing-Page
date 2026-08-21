@@ -332,7 +332,28 @@
         </ul>
       </div>
 
-      <!-- V1.5 hook: assistant widget mounts here. See README.md § "V1.5". -->
+      <div class="assistant" id="assistant">
+        <p class="eyebrow" style="margin-top:48px;">Ainda com dúvidas?</p>
+        <h3 class="assistant__title">Pergunte diretamente sobre o CO2·QField</h3>
+        <p class="section__note" style="margin-bottom:20px;">
+          Respostas geradas com base no Memorial Descritivo do produto. O assistente não
+          responde sobre preço, prazos, ou temas fora do escopo técnico do CO2·QField.
+        </p>
+
+        <form class="assistant__form" id="assistant-form">
+          <input
+            class="form__input assistant__input"
+            type="text"
+            id="assistant-question"
+            placeholder="Ex.: os dados de uma planta ficam isolados de outra?"
+            maxlength="500"
+            required
+          >
+          <button class="btn btn--primary" type="submit">Perguntar</button>
+        </form>
+
+        <div class="assistant__answer" id="assistant-answer" hidden></div>
+      </div>
 
     </div>
   </section>
@@ -390,5 +411,6 @@
 </footer>
 
 <script src="script.js"></script>
+<script src="assistant.js"></script>
 </body>
 </html>

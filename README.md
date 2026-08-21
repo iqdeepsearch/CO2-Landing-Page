@@ -82,3 +82,70 @@ Decisão já tomada no briefing: sem base vetorial/RAG complexo (Memorial
 embutido direto no prompt de uma função serverless simples) e sem busca na
 web ao vivo (assistente responde só sobre o produto). Até lá, o site funciona
 de forma completa e independente sem essa peça.
+
+---
+
+## V1.5 — Assistente interativo (ativado nesta versão)
+
+### Estrutura de pastas necessária no repositório
+
+```
+seu-repositório/
+├── api/
+│   └── ask.js              ← função serverless (fica na RAIZ do repo, não em docs/)
+└── docs/                    ← pasta servida pelo GitHub Pages
+    ├── index.html
+    ├── style.css
+    ├── script.js
+    └── assistant.js
+```
+
+O GitHub Pages só enxerga o que está em `docs/` (conforme configurado em
+Settings → Pages). A pasta `api/` na raiz é ignorada pelo Pages — ela existe
+só para a Vercel encontrar e publicar a função.
+
+### Passo a passo do deploy
+
+1. **Gere uma chave de API:** em [console.anthropic.com](https://console.anthropic.com),
+   crie uma chave (Settings → API Keys). Guarde-a — você vai precisar dela
+   só uma vez, no passo 4.
+2. **Suba `api/ask.js` para a raiz do repositório** (fora de `docs/`), e
+   `assistant.js` para dentro de `docs/`, junto dos demais arquivos do site.
+3. **Crie um projeto na Vercel:** em [vercel.com](https://vercel.com), conecte
+   sua conta do GitHub e importe o repositório `CO2-Landing-Page`. A Vercel
+   detecta a pasta `api/` automaticamente — não precisa configurar nada
+   além disso na maioria dos casos.
+4. **Adicione a variável de ambiente:** no projeto criado, vá em
+   **Settings → Environment Variables** e crie:
+   - Nome: `ANTHROPIC_API_KEY`
+   - Valor: a chave gerada no passo 1
+   (Nunca coloque essa chave em nenhum arquivo do repositório — só aqui,
+   como variável de ambiente da Vercel.)
+5. **Copie a URL do projeto** que a Vercel gerou (algo como
+   `https://co2-landing-page.vercel.app`).
+6. **Atualize `assistant.js`** (dentro de `docs/`): troque
+   `https://SEU-PROJETO.vercel.app/api/ask` pela URL real + `/api/ask` no
+   final.
+7. Suba essa alteração pro GitHub. O GitHub Pages atualiza o site; a Vercel
+   já está de pé, servindo a função.
+8. Teste: abra o site publicado, role até "Pergunte diretamente sobre o
+   CO2·QField", faça uma pergunta. Se der erro, veja o Console do
+   navegador (F12) — mensagens de CORS ou 404 geralmente indicam que a URL
+   em `assistant.js` ainda não foi atualizada corretamente.
+
+### Sobre custo
+
+Cada pergunta = uma chamada paga à API da Anthropic (não é coberta pelo
+free tier da Vercel, que cobre só a execução da função em si). Para um site
+de baixo tráfego em fase de validação, o custo por pergunta é pequeno, mas
+não é zero — acompanhe o uso em console.anthropic.com. Se quiser um limite
+de segurança, dá para adicionar um contador simples de perguntas por
+IP/dia na própria função — avise se quiser que eu adicione isso.
+
+### Sobre o modelo escolhido
+
+A função usa `claude-haiku-4-5-20251001` — modelo mais econômico, adequado
+para respostas curtas de FAQ baseadas em um documento fixo. Como nomes e
+disponibilidade de modelo podem mudar, confirme o modelo vigente em
+[docs.claude.com](https://docs.claude.com/en/docs/about-claude/models)
+antes de publicar, e troque no `api/ask.js` se necessário.
