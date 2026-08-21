@@ -44,7 +44,7 @@ if ("IntersectionObserver" in window && revealTargets.length) {
 //      logo após a seção #faq ("<!-- V1.5 hook: ... -->").
 //   2. Ao receber uma pergunta do visitante, chamar uma função
 //      serverless (ex.: Vercel) via fetch(), NUNCA a API da
-//      Anthropic diretamente do navegador (isso exporia a chave).
+//      Gemini diretamente do navegador (isso exporia a chave).
 //   3. A função serverless deve montar o prompt com o conteúdo
 //      do Memorial Descritivo embutido como contexto fixo —
 //      sem base vetorial e sem busca na web (ver briefing V1.5

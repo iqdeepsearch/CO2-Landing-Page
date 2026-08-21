@@ -3,7 +3,7 @@
 // ============================================================
 // Hospedada na Vercel (fora da pasta `docs`, que é servida pelo GitHub
 // Pages). Recebe a pergunta do visitante, monta um prompt com o Memorial
-// Descritivo embutido como contexto fixo, chama a API da Anthropic, e
+// Descritivo embutido como contexto fixo, chama a API da Gemini, e
 // devolve a resposta.
 //
 // Decisões de arquitetura (ver Seção "V1.5" do briefing):
@@ -13,7 +13,7 @@
 //     produto, com base no Memorial, para não citar norma desatualizada
 //     ou fora de contexto na frente de auditores/investidores.
 //   - A chave da API NUNCA aparece no navegador — fica só aqui, no
-//     servidor, como variável de ambiente (ANTHROPIC_API_KEY).
+//     servidor, como variável de ambiente (GEMINI_API_KEY).
 // ============================================================
 
 const MEMORIAL = `
@@ -231,12 +231,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
+    const apiRes = await fetch("https://api.gemini.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
+        "x-api-key": process.env.GEMINI_API_KEY,
+        "gemini-version": "2023-06-01",
       },
       body: JSON.stringify({
         // Modelo econômico, adequado para respostas de FAQ curtas.
@@ -251,7 +251,7 @@ export default async function handler(req, res) {
 
     if (!apiRes.ok) {
       const errText = await apiRes.text();
-      console.error("Erro da API Anthropic:", errText);
+      console.error("Erro da API Gemini:", errText);
       return res.status(502).json({ error: "Falha ao consultar o assistente. Tente novamente em instantes." });
     }
 
