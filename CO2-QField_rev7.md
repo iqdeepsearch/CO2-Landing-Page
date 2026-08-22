@@ -1,16 +1,20 @@
 # Memorial Descritivo: Sistema Automatizado de Monitoramento de Emissões de CO₂ Industrial Baseado em Geolocalização e Código de Rastreio (V6)
 
-**Versão:** 7.0 | **Status:** Bloco 1 (Schema, Governança e Máquina de Estados) Formalizado em DDL — Máquina de Estados de 4 Fases, Roles de Serviço Completas e Auditoria de Exportação Consolidadas. Próxima Etapa: Sandbox/PoC de Sincronização QFieldCloud.
+**Versão:** 8.0 | **Nome comercial:** CO2·IQ Monitor | **Status:** Bloco 1 (Schema, Governança e Máquina de Estados) Formalizado em DDL — Máquina de Estados de 4 Fases, Roles de Serviço Completas e Auditoria de Exportação Consolidadas. Próxima Etapa: Sandbox/PoC de Sincronização QFieldCloud.
 
+> **Nota de revisão (Rev 8):** Esta revisão não altera a arquitetura de dados do Bloco 1. Ela formaliza decisões de produto e de contrato de campo que já orientavam a landing e a operação, mas não estavam no memorial — e portanto o assistente da página não podia respondê-las com precisão: (i) nome comercial **CO2·IQ Monitor** (QField permanece cliente de captura, não identidade); (ii) contrato do QR Code como identificador estável, nunca como depósito de fator ou consumo; (iii) georreferência dupla — coordenada de cadastro do ativo versus coordenada da visita; (iv) ritmo operacional mensal/trimestral versus inventário anual; (v) posicionamento explícito como inventário por dado de atividade (GHG Protocol), não como CEMS de chaminé; (vi) recusa de fork do QField/QFieldCloud. Nenhum GRANT, trigger ou nome de coluna foi alterado. O nome de arquivo `CO2-QField_rev7.md` é histórico e mantido por compatibilidade com a API; o produto, nas respostas ao visitante, chama-se CO2·IQ Monitor.
+>
 > **Nota de revisão (Rev 7):** Esta revisão não altera a arquitetura de dados do Bloco 1. Ela formaliza, em texto, um princípio que já era verdadeiro na prática: a governança (schema, roles, máquina de estados) pertence ao banco de dados, não ao aplicativo de captura em campo. Dois ajustes cosméticos foram feitos para que a nomenclatura reflita isso — (i) a role de escrita bruta por planta deixou de levar o nome do app (`qfield_{planta_id}` → `field_ingest_{planta_id}`); (ii) a captura do nome do operador é descrita como regra de negócio do payload, não mais como uma expressão específica do QGIS/QField. Uma nova Seção 5.6 formaliza o princípio de Ingestão Desacoplada. Nenhum GRANT, trigger ou nome de coluna foi alterado.
 
 ---
 
 ## 1. Conceito do Projeto e Posicionamento Estratégico
 
-O projeto consiste em uma solução vertical de inteligência geoespacial e automação ambiental voltada para o setor industrial. O sistema integra a identificação física unívoca de ativos fabris via QR Code, a captura automatizada de coordenadas geográficas de alta precisão (Latitude e Longitude), o processamento analítico autônomo de taxas de emissão de dióxido de carbono (CO₂) e a publicação instantânea desses dados em um painel (dashboard) web interativo dedicado por planta fabril.
+O **CO2·IQ Monitor** (nome comercial; o memorial e artefactos internos podem ainda referir o nome histórico CO2·QField) é uma solução vertical de inteligência geoespacial e automação ambiental voltada para o setor industrial. O sistema integra a identificação física unívoca de ativos fabris via QR Code, a captura automatizada de coordenadas geográficas de alta precisão (Latitude e Longitude) **tanto do ativo quanto da visita**, o processamento analítico autônomo de taxas de emissão de dióxido de carbono (CO₂) conforme o GHG Protocol (Escopos 1 e 2) e a publicação desses dados em um painel (dashboard) web interativo dedicado por planta fabril.
 
-A proposta central é eliminar processos manuais, planilhas isoladas e a demora no ciclo de inventários ambientais, transformando inspeções de campo rotineiras em um fluxo contínuo de dados estruturados para tomada de decisão sustentável, eficiência operacional e auditoria de conformidade.
+A proposta central é eliminar processos manuais, planilhas isoladas e a demora no ciclo de inventários ambientais, transformando inspeções de campo **rotineiras** (em geral mensais ou trimestrais, no ritmo já existente de combustível, fator SIN e licença) em um fluxo contínuo de dados estruturados para tomada de decisão, eficiência operacional e auditoria de conformidade. O inventário anual é a soma dessas visitas — não uma campanha na véspera da auditoria.
+
+QField e QFieldCloud são o **cliente de campo e a sincronização atuais**, escolhidos por serem open-source, falarem com QGIS e já serem aceitos em coleta ambiental. Não são o nome do produto, não são a fonte da verdade (esta é o PostgreSQL/PostGIS do CO2·IQ Monitor) e não serão forkados na V1.
 
 ---
 
@@ -128,6 +132,67 @@ Esta seção formaliza uma decisão de arquitetura que já era verdadeira na pr�
 * **QField é o cliente de campo atual, não um requisito arquitetural:** A escolha do QField/QFieldCloud (Seção 7) resolve, hoje, dois problemas genuinamente caros de reconstruir do zero — sincronização offline com resolução de conflitos, e alteração de formulário em campo sem novo ciclo de publicação em loja de aplicativos. Essa escolha é reavaliável sem impacto na Seção 5.4.
 * **Caminho de substituição preservado:** Caso o QField/QFieldCloud se torne um gargalo técnico ou um risco comercial (descontinuidade, mudança de licenciamento, aquisição por terceiros), um cliente de captura alternativo (ex.: app minimalista de QR Code + GPS, nativo ou PWA) pode ser conectado à mesma role `field_ingest_{planta_id}` e à mesma tabela `coletas_campo`, sem alterar o motor de cálculo (Python), o Dashboard Web, ou qualquer GRANT/trigger do Bloco 1.
 * **Portabilidade de dados como mitigação adicional de risco:** Por operar sobre formatos abertos (PostgreSQL/PostGIS, e GeoPackage no armazenamento local do cliente móvel), os dados coletados permanecem acessíveis e portáveis para qualquer outra ferramenta GIS de mercado, independentemente da continuidade comercial do QFieldCloud especificamente.
+* **Sem fork na V1:** QField e QFieldCloud não serão forkados. A vantagem de usar um cliente GIS já aceito no mercado (QGIS no escritório da consultoria, QField no celular do analista) perde-se se a equipe herdar a manutenção de um GIS móvel completo. A mitigação de dependência é o contrato de payload (esta seção e as Seções 5.7–5.8), não uma cópia do código de terceiro.
+
+### 5.7 Contrato do QR Code (identidade, não cálculo)
+
+O QR físico parafusado no ativo é um **identificador estável**. Ele não carrega o cálculo de CO₂, o fator de emissão nem o consumo da visita. Se esses valores fossem gravados na plaqueta, ela se tornaria uma planilha obsoleta no dia em que o fator SIN mudasse ou o equipamento trocasse de combustível.
+
+O sistema opera em três camadas. Só a primeira vai no QR.
+
+**Camada 1 — Gravado no QR (estável):**
+* Prefixo do produto (`CO2IQ`), para não colidir com QR de manutenção, estoque ou EPI.
+* Identificador da planta.
+* Identificador interno estável do ativo (chave de `ativos_fabris`).
+* TAG operacional já usado no chão de fábrica (ex.: `CAL-01`, `P-3472B`).
+
+Formato de referência (texto, não URL longa, não PDF): `CO2IQ|<planta_id>|<ativo_id>|<TAG>`.
+
+Na plaqueta, **ao lado** do QR, em texto legível sem aparelho: TAG, tipo do equipamento e unidade. Código que só a máquina lê não transmite confiança em campo.
+
+**Camada 2 — Cadastro `ativos_fabris` (buscado após o scan; muda sem trocar a plaqueta):**
+* Tipo do ativo (caldeira, forno, gerador, medidor, bomba, etc.).
+* Escopo (1 = combustão estacionária; 2 = eletricidade da rede).
+* Combustível / fonte.
+* Unidade esperada da leitura (m³, L, kg, t, kWh).
+* Coordenada de referência do ativo no layout da planta.
+* Status (ativo / desativado).
+
+QR desconhecido — prefixo inválido ou ativo inexistente no cadastro daquela planta — é rejeitado. O sistema não inventa equipamento.
+
+**Camada 3 — Gerada na visita (`coletas_campo`; não está no QR):**
+* Consumo / leitura do período — único número que o operador confirma ou digita; é o \(C_i\) da equação da Seção 5.3.
+* Latitude e longitude da visita (GPS do aparelho).
+* Timestamp.
+* Nome do operador (regra de payload, Seção 5.4).
+
+O motor Python aplica o fator vigente na data da coleta (Seção 5.2). GPS e nome **não entram na conta de tCO₂e**; entram no crédito do número (evidência de presença e rastro nominado).
+
+**O que nunca vai no QR:** fator IPCC ou SIN, resultado em tCO₂e, consumo do mês, nome do operador, coordenada da visita.
+
+### 5.8 Georreferência dupla (ativo × visita)
+
+Existem duas coordenadas, com papéis distintos:
+
+| Ponto | Onde vive | Papel |
+| :--- | :--- | :--- |
+| **Ativo** | Cadastro `ativos_fabris` | Onde o equipamento/plaqueta está no pátio; alimenta o mapa da planta. |
+| **Visita** | Cada linha de `coletas_campo` | Onde o celular estava no momento do scan; prova de presença física. |
+
+A vantagem de confiança é o **cruzamento**. Se a coordenada da visita distar além de um raio configurável da coordenada de cadastro do ativo, a coleta não segue silenciosa para o inventário: entra em fila de atenção (mesmo espírito da fila `Rejected/Error` da Seção 5.5). Isso mitiga o caso “scan da foto da plaqueta no escritório”.
+
+O georreferenciamento é nativo da esteira GIS (QGIS → QField → PostGIS → dashboard Leaflet). Essa é uma vantagem de canal para consultorias que já operam em QGIS; na identidade do produto, o que se afirma ao gestor é o efeito — cada ativo é um ponto, cada visita também — não a marca do aplicativo de captura.
+
+### 5.9 Ritmo operacional da coleta
+
+A V1 **não** impõe um único calendário legal de “escanear QR todo mês”. Ela acompanha o ciclo em que o dado de atividade **já nasce** na planta:
+
+* O fator de energia do SIN (Escopo 2) é publicado **mensalmente** pelo MCTI; kWh × fator de agosto não é o de março.
+* Consumo de combustível de caldeira, forno e gerador a planta já fecha, em regra, **todo mês** (compra, tanque, totalizador).
+* Condicionantes de licença ambiental estadual costumam pedir auto-monitoramento **mensal ou trimestral**.
+* O inventário GHG corporativo (Programa Brasileiro GHG Protocol / ISO 14064-1) é em geral **anual** — e é a **soma** desses fechamentos. Mês lançado no ativo errado não se conserta na véspera da auditoria.
+
+A leitura por QR reforça-se com a frequência: dezenas de ativos × doze meses é o volume em que “a caldeira do fundo” vira erro sistemático. O sistema admite ritmo trimestral para ativo menor ou campanha da consultoria. O contrato é o mesmo em qualquer visita: TAG certo + consumo + hora + pessoa + coordenada.
 
 ---
 
@@ -160,9 +225,10 @@ O ciclo operacional é regido por uma arquitetura integrada de ponta a ponta:
 
 Para assegurar agilidade de entrega, estabilidade e conformidade com o framework REVERSA, os seguintes itens estão formalmente excluídos do escopo inicial da Versão 1.0:
 
-* **Sem telemetria IoT contínua cabeada:** A coleta é realizada exclusivamente por rotinas de inspeção com operadores humanos equipados com dispositivos móveis.
+* **Sem telemetria IoT contínua cabeada e sem CEMS de chaminé:** A coleta é realizada exclusivamente por rotinas de inspeção com operadores humanos equipados com dispositivos móveis. A V1 é **inventário por dado de atividade** (consumo × fator oficial, Seção 5.3), não monitoramento contínuo de gases na chaminé. Não substitui analisador legal, condicionante específica de órgão ambiental nem o julgamento do responsável técnico (por isso existe a etapa de validação).
 * **Sem Multi-Tenancy lógico compartilhado (RLS sobre schema único):** A V1 adota isolamento Single-Tenant físico por schema PostgreSQL dedicado e role de serviço exclusiva por planta (Seção 5.5), em vez de um modelo de banco compartilhado com Row Level Security por `tenant_id`. Essa é uma decisão deliberada de escopo e viabilidade técnica para o MVP — não uma lacuna de segurança pendente.
 * **Sem marketplace de compra e venda de créditos de carbono:** O foco exclusivo da V1 é a mensuração, integridade e conformidade de inventário.
+* **Sem aplicativo móvel próprio e sem fork de QField/QFieldCloud:** A captura em campo na V1 usa o cliente GIS móvel já existente (Seção 5.6). A mitigação de dependência de terceiro é o contrato de payload no banco do CO2·IQ Monitor, não a duplicação do código do cliente.
 
 ---
 

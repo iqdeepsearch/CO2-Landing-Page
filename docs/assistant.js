@@ -54,12 +54,12 @@ function showAnswer(kind, text) {
 
   if (
     (kind === "ok" || kind === "error") &&
-    /formul[aá]rio de contato/i.test(text)
+    /formul[aá]rio de (contato|coment[aá]rios)/i.test(text)
   ) {
     const link = document.createElement("a");
     link.href = "#interesse";
     link.className = "assistant__form-link";
-    link.textContent = "Abrir formulário de contato";
+    link.textContent = "Abrir formulário de comentários";
     assistantAnswer.appendChild(document.createTextNode("\n"));
     assistantAnswer.appendChild(link);
   }
