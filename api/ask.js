@@ -1,6 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
-
-const ai = new GoogleGenAI({});
+import { GoogleGenAI } from "@google/genai";
 
 const MEMORIAL = `
 # Memorial Descritivo: Sistema Automatizado de Monitoramento de Emissões de CO₂ Industrial Baseado em Geolocalização e Código de Rastreio (V6)
@@ -77,29 +75,59 @@ REGRAS:
 
 MEMORIAL: ${MEMORIAL}`;
 
-export default async function handler(req, res) {
-  // Configuração de CORS
+function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function readQuestion(req) {
+  const body = req.body;
+  if (!body) return undefined;
+  if (typeof body === "string") {
+    try {
+      return JSON.parse(body).question;
+    } catch {
+      return undefined;
+    }
+  }
+  return body.question;
+}
+
+export default async function handler(req, res) {
+  setCors(res);
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
+  }
+
+  if (req.method === "GET") {
+    const hasKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+    return res.status(200).json({ ok: true, hasKey });
   }
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido." });
   }
 
-  const { question } = req.body || {};
+  const question = readQuestion(req);
 
   if (!question || typeof question !== "string" || question.length > 500) {
     return res.status(400).json({ error: "Pergunta inválida ou ausente." });
   }
 
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY / GOOGLE_API_KEY ausente.");
+    return res.status(500).json({
+      error: "Chave da API Gemini não configurada no ambiente da Vercel.",
+    });
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: "gemini-2.5-flash",
       contents: question,
       config: {
         systemInstruction: SYSTEM_PROMPT,
@@ -111,6 +139,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ answer });
   } catch (err) {
     console.error("Erro na API do Gemini:", err);
-    return res.status(500).json({ error: "Falha ao consultar o assistente. Tente novamente em instantes." });
+    return res.status(500).json({
+      error: "Falha ao consultar o assistente. Tente novamente em instantes.",
+    });
   }
 }
