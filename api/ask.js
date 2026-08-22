@@ -162,7 +162,8 @@ export default async function handler(req, res) {
       contents: question,
       config: {
         systemInstruction: buildSystemPrompt(memorial.text),
-        maxOutputTokens: 400,
+        maxOutputTokens: 800,
+        thinkingConfig: { thinkingBudget: 0 },
       },
     });
 
@@ -170,8 +171,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ answer });
   } catch (err) {
     console.error("Erro na API do Gemini:", err);
+    const detail = err?.message ? String(err.message).slice(0, 300) : undefined;
     return res.status(500).json({
       error: "Falha ao consultar o assistente. Tente novamente em instantes.",
+      detail,
     });
   }
 }

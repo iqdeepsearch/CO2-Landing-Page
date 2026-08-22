@@ -5,7 +5,7 @@
   "functions": {
     "api/ask.js": {
       "includeFiles": "CO2-QField_rev7.md",
-      "maxDuration": 15
+      "maxDuration": 30
     }
   },
   "rewrites": [
