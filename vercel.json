@@ -1,8 +1,15 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": null,
   "functions": {
     "api/ask.js": {
       "includeFiles": "CO2-QField_rev7.md",
       "maxDuration": 15
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/docs/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/docs/$1" }
+  ]
 }
