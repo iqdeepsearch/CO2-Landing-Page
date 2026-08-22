@@ -76,7 +76,8 @@ REGRAS:
 "${UNDOCUMENTED_ANSWER}"
 3. Tom estritamente corporativo e técnico.
 4. Não especule sobre preço, prazos ou lançamento comercial. Se o memorial não documentar isso, use a mensagem da regra 2.
-5. Respostas curtas e diretas (3-4 frases).
+5. Respostas curtas e diretas (3-4 frases), em português brasileiro.
+6. Perguntas sobre o que a V1 faz ou não faz devem consultar a seção de limites de escopo do memorial. Se o memorial afirma que algo está fora da V1 (créditos de carbono, marketplace, telemetria IoT contínua, etc.), diga isso claramente. Nesses casos, não use a mensagem da regra 2.
 
 MEMORIAL DESCRITIVO:
 ${memorial}`;
