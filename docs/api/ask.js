@@ -163,7 +163,6 @@ export default async function handler(req, res) {
       config: {
         systemInstruction: buildSystemPrompt(memorial.text),
         maxOutputTokens: 800,
-        thinkingConfig: { thinkingBudget: 0 },
       },
     });
 
