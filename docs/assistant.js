@@ -1,15 +1,10 @@
 // ============================================================
 // CO2·QField — V1.5: widget do assistente de FAQ
 // ============================================================
-// Chama a função serverless hospedada na Vercel (não a API da Gemini
-// diretamente — isso exporia a chave de API no navegador de qualquer
-// visitante).
-//
-// IMPORTANTE: troque a URL abaixo pela URL real do seu projeto na Vercel
-// depois do deploy (ver README.md § "V1.5").
+// Chama a função serverless hospedada na Vercel via rota relativa (/api/ask).
 // ============================================================
 
-const ASSISTANT_ENDPOINT = "https://co-2-landing-page-pzirq9h61-iqdeepsearch.vercel.app";
+const ASSISTANT_ENDPOINT = "/api/ask";
 
 const assistantForm = document.getElementById("assistant-form");
 const assistantQuestion = document.getElementById("assistant-question");
