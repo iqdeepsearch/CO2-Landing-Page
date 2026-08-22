@@ -25,7 +25,7 @@ investidores) antes de qualquer definição de preço ou modelo comercial.
   por isso o FAQ não abria ao clicar. Root cause documentado para não se
   repetir: veja a convenção de nomes abaixo.
 - **Decisão consciente, mantida:** nenhum link para QField/QFieldCloud nesta
-  página pública — ver Seção 5.6 do Memorial (`CO2-QField_rev7.md`). QField é
+  página pública — ver Seção 5.6 do Memorial (`CO2-IQ-Monitor_rev8.md`). QField é
   implementação atual, não identidade do produto; expor o link reabriria a
   leitura de "camada em cima de ferramenta de terceiros" que a arquitetura
   foi desenhada para evitar.
@@ -70,7 +70,7 @@ investidores) antes de qualquer definição de preço ou modelo comercial.
 - **Links normativos:** confirme se `ghgprotocol.org`, `ipcc.ch` e
   `gov.br/mcti` (usado aqui para a página do MCTI) ainda são os endereços
   corretos e mais específicos possíveis antes de publicar.
-- **Conteúdo do FAQ:** baseado no Memorial `CO2-QField_rev7.md`. Se o
+- **Conteúdo do FAQ:** baseado no Memorial `CO2-IQ-Monitor_rev8.md`. Se o
   memorial mudar de revisão, revise o FAQ manualmente (sem sincronização
   automática nesta fase, por design).
 

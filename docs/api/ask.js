@@ -3,10 +3,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
 
-const MEMORIAL_FILENAME = "CO2-QField_rev7.md";
+const MEMORIAL_FILENAME = "CO2-IQ-Monitor_rev8.md";
 const MEMORIAL_REMOTE =
   process.env.MEMORIAL_URL ||
-  "https://raw.githubusercontent.com/iqdeepsearch/CO2-Landing-Page/main/CO2-QField_rev7.md";
+  "https://raw.githubusercontent.com/iqdeepsearch/CO2-Landing-Page/main/CO2-IQ-Monitor_rev8.md";
 
 const UNDOCUMENTED_ANSWER =
   "Essa informação ainda não está documentada no memorial do produto. Envie sua dúvida pelo formulário de comentários, mais abaixo nesta página, para que possamos responder.";
