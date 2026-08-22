@@ -57,7 +57,7 @@ const MEMORIAL_SECTIONS = [
 ];
 
 const FALLBACK_ANSWER =
-  "Essa informação ainda não está documentada de forma específica no memorial público. O CO2·QField cobre coleta em campo (QR + GPS), cálculo de Escopos 1 e 2, isolamento por planta e trilha de auditoria. Reformule a pergunta sobre um desses temas, ou use o formulário de contato.";
+  "Essa informação ainda não está documentada no memorial do produto. Envie sua dúvida pelo formulário de contato, mais abaixo nesta página, para que possamos responder.";
 
 function normalize(text) {
   return text
@@ -83,7 +83,7 @@ function answerFromMemorial(question) {
 
 async function askApi(question) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
+  const timer = setTimeout(() => controller.abort(), 14000);
 
   try {
     const res = await fetch(ASSISTANT_ENDPOINT, {
@@ -120,6 +120,15 @@ function showAnswer(kind, text) {
         ? "assistant__answer assistant__answer--loading"
         : "assistant__answer";
   assistantAnswer.textContent = text;
+
+  if (kind === "ok" && /formul[aá]rio de contato/i.test(text)) {
+    const link = document.createElement("a");
+    link.href = "#interesse";
+    link.className = "assistant__form-link";
+    link.textContent = "Abrir formulário de contato";
+    assistantAnswer.appendChild(document.createTextNode("\n"));
+    assistantAnswer.appendChild(link);
+  }
 }
 
 if (assistantForm) {

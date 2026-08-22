@@ -1,79 +1,60 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
 
-const MEMORIAL = `
-# Memorial Descritivo: Sistema Automatizado de Monitoramento de Emissões de CO₂ Industrial Baseado em Geolocalização e Código de Rastreio (V6)
+const MEMORIAL_FILENAME = "CO2-QField_rev7.md";
 
-**Versão:** 7.0 | **Status:** Bloco 1 (Schema, Governança e Máquina de Estados) Formalizado em DDL — Máquina de Estados de 4 Fases, Roles de Serviço Completas e Auditoria de Exportação Consolidadas. Próxima Etapa: Sandbox/PoC de Sincronização QFieldCloud.
+const UNDOCUMENTED_ANSWER =
+  "Essa informação ainda não está documentada no memorial do produto. Envie sua dúvida pelo formulário de contato, mais abaixo nesta página, para que possamos responder.";
 
-> **Nota de revisão (Rev 7):** Esta revisão não altera a arquitetura de dados do Bloco 1. Ela formaliza, em texto, um princípio que já era verdadeiro na prática: a governança (schema, roles, máquina de estados) pertence ao banco de dados, não ao aplicativo de captura em campo. Dois ajustes cosméticos foram feitos para que a nomenclatura reflita isso — (i) a role de escrita bruta por planta deixou de levar o nome do app (\`qfield_{planta_id}\` → \`field_ingest_{planta_id}\`); (ii) a captura do nome do operador é descrita como regra de negócio do payload, não mais como uma expressão específica do QGIS/QField. Uma nova Seção 5.6 formaliza o princípio de Ingestão Desacoplada. Nenhum GRANT, trigger ou nome de coluna foi alterado.
+function loadMemorial() {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    join(process.cwd(), MEMORIAL_FILENAME),
+    join(here, "..", MEMORIAL_FILENAME),
+    join(here, MEMORIAL_FILENAME),
+  ];
 
----
+  const errors = [];
+  for (const filePath of candidates) {
+    try {
+      const text = readFileSync(filePath, "utf8").trim();
+      if (text) return { text, filePath };
+    } catch (err) {
+      errors.push(`${filePath}: ${err.message}`);
+    }
+  }
 
-## 1. Conceito do Projeto e Posicionamento Estratégico
+  throw new Error(
+    `Memorial ${MEMORIAL_FILENAME} não encontrado. Tentativas: ${errors.join(" | ")}`
+  );
+}
 
-O projeto consiste em uma solução vertical de inteligência geoespacial e automação ambiental voltada para o setor industrial. O sistema integra a identificação física unívoca de ativos fabris via QR Code, a captura automatizada de coordenadas geográficas de alta precisão (Latitude e Longitude), o processamento analítico autônomo de taxas de emissão de dióxido de carbono (CO₂) e a publicação instantânea desses dados em um painel (dashboard) web interativo dedicado por planta fabril.
+let memorialCache = null;
 
-A proposta central é eliminar processos manuais, planilhas isoladas e a demora no ciclo de inventários ambientais, transformando inspeções de campo rotineiras em um fluxo contínuo de dados estruturados para tomada de decisão sustentável, eficiência operacional e auditoria de conformidade.
+function getMemorial() {
+  if (process.env.NODE_ENV === "production" && memorialCache) {
+    return memorialCache;
+  }
+  memorialCache = loadMemorial();
+  return memorialCache;
+}
 
----
+function buildSystemPrompt(memorial) {
+  return `Você é o assistente de perguntas frequentes do site institucional do CO2·QField.
 
-## 2. Perfil de Cliente Ideal (ICP) e Modelo de Mercado
-
-A solução é calibrada especificamente para atender a lacuna entre ferramentas de coleta genéricas e softwares enterprise de alto custo:
-
-* **Público-Alvo Primário (Usuário Final):** Indústrias de Médio Porte (ex.: cerâmicas, alimentícias, metalúrgicas, cimenteiras regionais e frigoríficos) que necessitam de conformidade ambiental rigorosa, mas não possuem equipes internas de desenvolvimento de software ou analistas de GIS dedicados.
-* **Canal Estratégico de Entrada (Multiplicador B2B2B):** Consultorias Ambientais especializadas em inventários de emissões e licenciamento. As consultorias utilizam o pipeline para acelerar suas operações de campo e entregam o dashboard web como produto de alto valor agregado para suas indústrias clientes.
-* **Modelo de Instância:** Arquitetura Single-Tenant por planta fabril, com isolamento garantido no nível de banco de dados por meio de schema PostgreSQL dedicado e role de serviço exclusiva por planta. Cada unidade produtiva opera com governança e parametrização individual, com dados de fatores de emissão centralizados em um schema compartilhado somente-leitura.
-
----
-
-## 3. Justificativa de Negócio e Impacto Econômico ($)
-
-O valor agregado do produto é fundamentado na economia direta de horas técnicas, mitigação de riscos regulatórios e eficiência térmica/operacional:
-
-| Pilar de Retorno (ROI) | Gargalo Sem a Solução vs. Ganho com o Sistema | Impacto Financeiro Estimado |
-| :--- | :--- | :--- |
-| **Mão de Obra Técnica** | Eliminação de 15 a 20 horas mensais gastas por analistas na transcrição de planilhas. | Economia de **R$ 12.000 a R$ 18.000 / ano** por planta. |
-| **Eficiência de Combustível** | Identificação imediata de queima incompleta e desregulações via alertas no dashboard. | Economia de **R$ 20.000 a R$ 60.000 / ano**. |
-| **Mitigação de Multas** | Rastreabilidade jurídica (GPS, timestamp e QR Code), evitando inconsistências. | Mitigação de autuações de **R$ 10.000 a > R$ 100.000**. |
-
----
-
-## 4. Dores (Pain Points) Resolvidas
-
-* Eliminação de processos manuais (pranchetas e planilhas desconectadas).
-* Visibilidade de desvios operacionais em tempo real.
-* Operação em áreas sem conectividade (Offline-First).
-* Imutabilidade dos registros de campo para auditorias.
-* Consolidação de todos os pontos de emissão em interface única com mapas interativos.
-
----
-
-## 5. Metodologias e Normas
-
-O sistema é estruturado conforme o GHG Protocol Corporate Standard (Escopos 1 e 2), ABNT NBR ISO 14064-1, Diretrizes do IPCC e fatores de emissão do SIN (MCTI). Cada dado é versionado e imutável no banco de dados.
-
----
-
-## 6. Estrutura de Etapas da Esteira de Dados
-
-1. **Design (QGIS):** Modelagem e validação dos formulários.
-2. **Coleta (Campo):** QR Code + GPS + Timestamp automático.
-3. **Sincronização:** Aplicação direta de deltas no PostgreSQL.
-4. **Cálculo (Motor Python):** Resolução do fator de emissão vigente e processamento conforme GHG Protocol.
-5. **Validação:** Workflow de 4 fases (rascunho -> calculado -> validado -> exportado).
-6. **Dashboard (Web):** Visualização e alertas.
-`;
-
-const SYSTEM_PROMPT = `Você é o assistente de perguntas frequentes do site institucional do CO2·QField.
 REGRAS:
-1. Responda apenas com base no Memorial Descritivo fornecido.
-2. Se a pergunta não estiver no Memorial, diga que a informação ainda não está documentada.
+1. Responda apenas com base no Memorial Descritivo abaixo. Não use conhecimento externo e não invente seções, números, prazos ou funcionalidades.
+2. Se a pergunta não puder ser respondida com o que está no Memorial, responda exatamente com esta mensagem:
+"${UNDOCUMENTED_ANSWER}"
 3. Tom estritamente corporativo e técnico.
-4. Não especule sobre preço, prazos ou lançamento comercial.
+4. Não especule sobre preço, prazos ou lançamento comercial. Se o memorial não documentar isso, use a mensagem da regra 2.
 5. Respostas curtas e diretas (3-4 frases).
 
-MEMORIAL: ${MEMORIAL}`;
+MEMORIAL DESCRITIVO:
+${memorial}`;
+}
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -101,9 +82,28 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  let memorial;
+  try {
+    memorial = getMemorial();
+  } catch (err) {
+    console.error(err);
+    if (req.method === "GET") {
+      const hasKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+      return res.status(200).json({ ok: false, hasKey, hasMemorial: false });
+    }
+    return res.status(500).json({
+      error: "Memorial descritivo indisponível para o assistente.",
+    });
+  }
+
   if (req.method === "GET") {
     const hasKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-    return res.status(200).json({ ok: true, hasKey });
+    return res.status(200).json({
+      ok: true,
+      hasKey,
+      hasMemorial: true,
+      memorialBytes: Buffer.byteLength(memorial.text, "utf8"),
+    });
   }
 
   if (req.method !== "POST") {
@@ -130,12 +130,12 @@ export default async function handler(req, res) {
       model: "gemini-2.5-flash",
       contents: question,
       config: {
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: buildSystemPrompt(memorial.text),
         maxOutputTokens: 400,
       },
     });
 
-    const answer = response.text || "Não foi possível gerar uma resposta.";
+    const answer = response.text || UNDOCUMENTED_ANSWER;
     return res.status(200).json({ answer });
   } catch (err) {
     console.error("Erro na API do Gemini:", err);
