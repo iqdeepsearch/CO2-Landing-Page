@@ -157,14 +157,34 @@ export default async function handler(req, res) {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
+    const payload = {
       model: "gemini-3.7-flash",
       contents: question,
       config: {
         systemInstruction: buildSystemPrompt(memorial.text),
         maxOutputTokens: 800,
       },
-    });
+    };
+
+    let response;
+    let lastErr;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        response = await ai.models.generateContent(payload);
+        lastErr = null;
+        break;
+      } catch (err) {
+        lastErr = err;
+        const msg = String(err?.message || "");
+        const retryable =
+          msg.includes("UNAVAILABLE") ||
+          msg.includes("high demand") ||
+          msg.includes("503");
+        if (!retryable || attempt === 3) throw err;
+        await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+      }
+    }
+    if (lastErr) throw lastErr;
 
     const answer = response.text || UNDOCUMENTED_ANSWER;
     return res.status(200).json({ answer });
