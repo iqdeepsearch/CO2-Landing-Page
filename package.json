@@ -1,0 +1,8 @@
+{
+  "name": "co2-qfield-api",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@google/genai": "^2.18.0"
+  }
+}
