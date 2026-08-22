@@ -4,7 +4,7 @@
 // Chama a função serverless hospedada na Vercel via rota relativa (/api/ask).
 // ============================================================
 
-const ASSISTANT_ENDPOINT = "/api/ask";
+const ASSISTANT_ENDPOINT = "https://co-2-landing-page-6niicxi67-iqdeepsearch.vercel.app/api/ask";
 
 const assistantForm = document.getElementById("assistant-form");
 const assistantQuestion = document.getElementById("assistant-question");
